@@ -6,6 +6,10 @@ function findScrollRoot() {
   return document.querySelector("[data-scroll-root]");
 }
 
+function isInputMode() {
+  return document.activeElement === findPrompt();
+}
+
 function scrollConversation(amount) {
   const scrollRoot = findScrollRoot();
 
@@ -15,12 +19,10 @@ function scrollConversation(amount) {
   });
 }
 
-let navigationMode = false;
-
 document.addEventListener(
   "keydown",
   (event) => {
-    if (navigationMode) {
+    if (!isInputMode()) {
       const scrollRoot = findScrollRoot();
 
       if (!scrollRoot) {
@@ -76,9 +78,7 @@ document.addEventListener(
     event.preventDefault();
     event.stopPropagation();
 
-    navigationMode = !navigationMode;
-
-    if (navigationMode) {
+    if (isInputMode()) {
       prompt.blur();
     } else {
       prompt.focus();
