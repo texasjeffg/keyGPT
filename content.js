@@ -6,8 +6,15 @@ function findScrollRoot() {
   return document.querySelector("[data-scroll-root]");
 }
 
-function isInputMode() {
-  return document.activeElement === findPrompt();
+function isEditing() {
+  const element = document.activeElement;
+
+  return (
+    element instanceof HTMLInputElement ||
+    element instanceof HTMLTextAreaElement ||
+    element instanceof HTMLSelectElement ||
+    element?.isContentEditable
+  );
 }
 
 function scrollConversation(amount) {
@@ -22,7 +29,7 @@ function scrollConversation(amount) {
 document.addEventListener(
   "keydown",
   (event) => {
-    if (!isInputMode()) {
+    if (!isEditing()) {
       const scrollRoot = findScrollRoot();
 
       if (!scrollRoot) {
@@ -75,14 +82,24 @@ document.addEventListener(
       return;
     }
 
+    // Prompt is focused: enter navigation mode.
+    if (document.activeElement === prompt) {
+      event.preventDefault();
+      event.stopPropagation();
+      prompt.blur();
+      return;
+    }
+
+    // Another editable control is focused.
+    // Leave Escape to ChatGPT.
+    if (isEditing()) {
+      return;
+    }
+
+    // Nothing editable is focused: return to the prompt.
     event.preventDefault();
     event.stopPropagation();
-
-    if (isInputMode()) {
-      prompt.blur();
-    } else {
-      prompt.focus();
-    }
+    prompt.focus();
   },
   true,
 );
